@@ -114,3 +114,7 @@ src/
 * Julia Damasceno Busso - RM560293 - 2TDSPB
 * Gabriel Gomes Cardoso - Rm559597 - 2TDSPB
 * Jhonatan Quispe Torrez - rm560601 - 2TDSPB
+
+## Video: 
+
+https://youtu.be/aWBhcecG2h0
