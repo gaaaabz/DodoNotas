@@ -8,6 +8,7 @@ import { SafeAreaView }                                                         
 import { useState, useEffect }                                                                                                 from "react";
 import { salvarNotaUsuario }                                                                                                   from "../src/services/userDataService";
 import { collection, onSnapshot, orderBy, query, doc, deleteDoc, updateDoc }                                                   from "firebase/firestore"
+import { notificarAgora } from '../src/services/notificationService';
 
 type Nota = {
     id          : string,
@@ -104,29 +105,6 @@ export default function Home() {
                 }
             ]
         )
-    }
-
-    const salvarNota = async () => {
-        console.log("USER:", auth.currentUser);
-        console.log("UID:", auth.currentUser?.uid);
-        if (!tituloNota.trim()) {
-            Alert.alert("Atenção", "Digite um titulo para nota.")
-            return
-        }
-        const user = auth.currentUser
-        if (!user) {
-            Alert.alert("Erro", "Nenhum usuário autenticado.")
-            return
-        }
-
-        try {
-            await salvarNotaUsuario(user.uid, tituloNota.trim(),conteudoNota.trim())
-            Alert.alert("Sucesso", "Produto salvo com sucesso!")
-            setConteudoNota("")
-            console.log("Nota Salvo com Sucesso!")
-        } catch (error) {
-            console.log("Error ao salvar nota:" + error)
-        }
     }
 
     const excluirNota = (nota: Nota) => {

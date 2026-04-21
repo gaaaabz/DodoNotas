@@ -7,6 +7,7 @@ import { useRouter }                                                         fro
 import AsyncStorage                                                          from '@react-native-async-storage/async-storage';
 import { registrarUltimoLogin }                                              from '../src/services/userDataService';
 import { useTranslation} from 'react-i18next';
+import { notificarAgora } from '../src/services/notificationService';
 
 
 
@@ -44,6 +45,10 @@ export default function LoginScreen() {
 
 
         await AsyncStorage.setItem("@user", JSON.stringify(user))
+        await notificarAgora(
+  "Boas vindas",
+  "Você entrou no Dodonotas!"
+);
 
         router.replace("/Home")
       })

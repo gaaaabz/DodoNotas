@@ -10,6 +10,7 @@ import * as Location from 'expo-location';
 import { salvarNotaUsuario } from "../../src/services/userDataService";
 import MapaModal from "../components/mapaModal";
 import DataHoraModal from "../components/dataHoraModal";
+import { agendarNotificacao, cancelarNotificacao, notificarAgora } from "../../src/services/notificationService";
 
 export default function NotaDetalhe() {
   const { id } = useLocalSearchParams();
@@ -22,6 +23,7 @@ export default function NotaDetalhe() {
   const [original, setOriginal] = useState({ titulo: "", conteudo: "" });
   const [modalMapa, setModalMapa] = useState(false);
   const [modalDataHora, setModalDataHora] = useState(false);
+  const [notificationId, setNotificationId] = useState<string | null>(null);
 
 
 useEffect(() => {
@@ -41,11 +43,13 @@ useEffect(() => {
       const d    = data.dataAgendada ? data.dataAgendada.toDate() : null;
       const t    = data.tituloNota ?? "";
       const c    = data.conteudoNota ?? "";
+      const n    = data.notificationId ?? null;
 
       setTitulo(t);
       setConteudo(c);
       setOriginal({ titulo: t, conteudo: c });
       setData(d);
+      setNotificationId(n);
     }
     console.log(data)
   };
@@ -78,6 +82,16 @@ useEffect(() => {
   }
 
   try {
+
+    let novaNotificationId: string | null = null;
+    if (data) {
+    novaNotificationId = await agendarNotificacao(
+      "Lembrete",
+      titulo,
+      data
+    );
+
+  }
       //Nota nova
     if (id === "new") {
       await salvarNotaUsuario(
@@ -85,8 +99,13 @@ useEffect(() => {
         titulo.trim(),
         conteudo.trim(),
         local,
-        data
+        data,
+        notificationId
       );
+      await notificarAgora(
+  "Nota criada",
+  "Sua nota foi criada com sucesso!"
+);
       Alert.alert("Sucesso", "Nota criada!");
       router.back();
       return;
@@ -101,11 +120,18 @@ useEffect(() => {
       conteudoNota: conteudo.trim(),
       latitude: local?.latitude || null,
       longitude: local?.longitude || null,
-      dataAgendada: data
+      dataAgendada: data,
+      notificationId: novaNotificationId || null,
     });
+      if (notificationId) {
+  await cancelarNotificacao(notificationId);
+}
 
     setOriginal({ titulo, conteudo });
-
+      await notificarAgora(
+  "Nota atualizada",
+  "Sua nota foi atualizada com sucesso!"
+      );
     Alert.alert("Sucesso", "Nota atualizada!");
   } catch (error) {
     console.log(error);
