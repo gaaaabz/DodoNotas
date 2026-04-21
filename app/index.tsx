@@ -6,12 +6,15 @@ import { signInWithEmailAndPassword, sendPasswordResetEmail }                fro
 import { useRouter }                                                         from 'expo-router';
 import AsyncStorage                                                          from '@react-native-async-storage/async-storage';
 import { registrarUltimoLogin }                                              from '../src/services/userDataService';
+import { useTranslation} from 'react-i18next';
+
 
 
 export default function LoginScreen() {
 
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
+  const { t, i18n } = useTranslation()
 
   const router = useRouter()
   useEffect(() => {
@@ -30,7 +33,7 @@ export default function LoginScreen() {
 
   const handleLogin = () => {
     if (!email || !senha) {
-      Alert.alert('Atenção', 'Preencha todos os campos!');
+      Alert.alert(t("atencao"), t('preenchaCampos'));
       return;
     }
     signInWithEmailAndPassword(auth, email, senha)
@@ -48,11 +51,15 @@ export default function LoginScreen() {
         const errorCode    = error.code;
         const errorMessage = error.message;
         console.log(errorCode, errorMessage)
-        Alert.alert("ATENÇÃO", "Credenciais Inválidas, verifique e-mail e senha:", [
+      Alert.alert(t("atencao"), t("credenciaisInvalidas"), [
           { text: "OK" }
         ])
       });
   };
+
+    const mudarIdioma = (lang: string) => {
+    i18n.changeLanguage(lang)
+  }
 
 
   return (
@@ -63,7 +70,7 @@ export default function LoginScreen() {
       {/* Campo Email */}
       <TextInput
         style                = {styles.input}
-        placeholder          = "E-mail"
+        placeholder          = {t("email")}
         placeholderTextColor = "#aaa"
         keyboardType         = "email-address"
         autoCapitalize       = "none"
@@ -74,7 +81,7 @@ export default function LoginScreen() {
       {/* Campo Senha */}
       <TextInput
         style                = {styles.input}
-        placeholder          = "senha"
+        placeholder          = {t("senha")}
         placeholderTextColor = "#aaa"
         secureTextEntry
         value        = {senha}
@@ -83,11 +90,33 @@ export default function LoginScreen() {
 
       {/* Botão */}
       <TouchableOpacity style = {styles.botao} onPress = {handleLogin}>
-      <Text             style = {styles.textoBotao}>Login</Text>
+      <Text             style = {styles.textoBotao}>{t("login")}</Text>
       </TouchableOpacity>
 
       <View style = {{alignItems:"center"}}>
-      <Link href  = "CadastrarScreen" style = {{ marginTop: 20, color: 'white' }}>registrar</Link>
+      <Link href  = "CadastrarScreen" style = {{ marginTop: 20, color: 'white' }}>{t("cadastrar")}</Link>
+      </View>
+
+        <View style={{ flexDirection: "row", justifyContent: "space-evenly", marginTop: 30 }}>
+        <TouchableOpacity
+          style={[styles.botao, { width: 110 }]}
+          onPress={() => mudarIdioma("en")}>
+          <Text>🇬🇧 English</Text>
+
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.botao, { width: 120 }]}
+          onPress={() => mudarIdioma("pt")}>
+            <Text>🇧🇷 Português</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.botao, { width: 120 }]}
+          onPress={() => mudarIdioma("jp")}
+        >
+        <Text>🇯🇵 日本語</Text>
+        </TouchableOpacity>
       </View>
 
     </View>

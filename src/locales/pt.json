@@ -1,4 +1,9 @@
 {
+    "email":"E-mail",
+    "senha":"Senha",
     "login":"Login",
     "cadastrar":"cadastrar",
+    "atencao":"Atenção",
+    "preenchaCampos":"Preencha todos os campops",
+    "credenciaisInvalidas":"Credenciais Inválidas, verifique e-mail e senha:"
 }

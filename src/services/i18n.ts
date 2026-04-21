@@ -7,7 +7,7 @@ import jp from "../locales/jp.json"
 
 i18n.use(initReactI18next).init(
     {
-        lng:"pt", // idioma padrão
+        lng:"en", // idioma padrão
         fallbackLng:"en",
         resources:{
             pt:{translation:pt},
