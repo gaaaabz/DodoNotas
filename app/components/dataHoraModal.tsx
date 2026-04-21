@@ -62,7 +62,7 @@ const handleChange = (event: any, selectedDate?: Date) => {
   const contagemRegressiva = () => {
     const agora = new Date().getTime();
     const diff = data.getTime() - agora;
-    console.log(diff, agora, data.getTime(), data)
+    //console.log(diff, agora, data.getTime(), data)
 
     if (diff <= 0) {
       return("Essa data já passou!");

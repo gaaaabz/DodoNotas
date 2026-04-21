@@ -44,6 +44,7 @@ useEffect(() => {
       setConteudo(c);
       setOriginal({ titulo: t, conteudo: c });
     }
+    console.log(data)
   };
 
   carregarNota();
@@ -80,7 +81,8 @@ useEffect(() => {
         user.uid,
         titulo.trim(),
         conteudo.trim(),
-        local
+        local,
+        data
       );
       Alert.alert("Sucesso", "Nota criada!");
       router.back();
@@ -96,6 +98,7 @@ useEffect(() => {
       conteudoNota: conteudo.trim(),
       latitude: local?.latitude || null,
       longitude: local?.longitude || null,
+      dataAgendada: data
     });
 
     setOriginal({ titulo, conteudo });
