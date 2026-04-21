@@ -8,6 +8,7 @@ import { addDoc, collection, serverTimestamp }                        from "fire
 import MapView, { Marker } from 'react-native-maps';
 import * as Location from 'expo-location';
 import { salvarNotaUsuario } from "../../src/services/userDataService";
+import MapModal from "../components/mapaModal";
 
 export default function NotaDetalhe() {
   const { id } = useLocalSearchParams();
@@ -130,7 +131,9 @@ useEffect(() => {
     return <Text>Carregando localização...</Text>;
   }
 
-  
+  const abrirMapa = () => {
+  setModalVisible(true);
+};
 
   return (
 <View style = {styles.container}>
@@ -145,6 +148,10 @@ useEffect(() => {
         <Text style = {styles.headerTitle}>
   {id === "new" ? "Criar Nota" : "Editar Nota"}
 </Text>
+
+        <TouchableOpacity onPress={() => abrirMapa()}>
+        <Ionicons name="map" size={20} color="#4DA6FF" />
+        </TouchableOpacity>
 
         <TouchableOpacity onPress = {handleSalvar}>
         <Ionicons         name    = "save-outline" size = {26} color = "#4DA6FF" />
@@ -168,6 +175,12 @@ useEffect(() => {
         multiline
         style = {styles.conteudo}
       />
+
+    <MapModal
+  visible={modalVisible}
+  onClose={() => setModalVisible(false)}
+  coords={local}
+/>
     </View>
   )}
 
