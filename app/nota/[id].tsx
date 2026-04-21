@@ -5,17 +5,24 @@ import { doc, getDoc, updateDoc }                                     from "fire
 import { db, auth }                                                   from "../../src/services/firebaseConfig";
 import { Ionicons }                                                   from "@expo/vector-icons";
 import { addDoc, collection, serverTimestamp }                        from "firebase/firestore";
+import MapView, { Marker } from 'react-native-maps';
+import * as Location from 'expo-location';
+import { salvarNotaUsuario } from "../../src/services/userDataService";
 
 export default function NotaDetalhe() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
 
+  const [local, setLocal] = useState({ latitude: 0, longitude: 0 });
   const [titulo, setTitulo]     = useState("");
   const [conteudo, setConteudo] = useState("");
   const [original, setOriginal] = useState({ titulo: "", conteudo: "" });
+  const [modalVisible, setModalVisible] = useState(false);
+
 
 useEffect(() => {
   if (id === "new") return;
+  pegarLocalizacao();
 
   const carregarNota = async () => {
     const user = auth.currentUser;
@@ -65,12 +72,12 @@ useEffect(() => {
   try {
       //Nota nova
     if (id === "new") {
-      await addDoc(collection(db, "usuarios", user.uid, "notas"), {
-        tituloNota  : titulo.trim(),
-        conteudoNota: conteudo.trim(),
-        criadoEm    : serverTimestamp(),
-      });
-
+      await salvarNotaUsuario(
+        user.uid,
+        titulo.trim(),
+        conteudo.trim(),
+        local
+      );
       Alert.alert("Sucesso", "Nota criada!");
       router.back();
       return;
@@ -78,10 +85,13 @@ useEffect(() => {
 
       //edição
     const ref = doc(db, "usuarios", user.uid, "notas", id as string);
+    pegarLocalizacao();
 
     await updateDoc(ref, {
-      tituloNota  : titulo.trim(),
+      tituloNota: titulo.trim(),
       conteudoNota: conteudo.trim(),
+      latitude: local?.latitude || null,
+      longitude: local?.longitude || null,
     });
 
     setOriginal({ titulo, conteudo });
@@ -93,6 +103,34 @@ useEffect(() => {
   }
 };
 
+
+
+  const pegarLocalizacao = async () => {
+    //Permissão
+    const { status } = await Location.requestForegroundPermissionsAsync();
+    console.log("Permissão de localização:", status);
+    if (status !== 'granted') {
+      alert('Permissão negada');
+      return;
+    }
+
+    //Pegar localização
+    console.log("Obtendo localização...");
+    const loc = await Location.getCurrentPositionAsync({});
+    
+    const coords = {
+      latitude: loc.coords.latitude,
+      longitude: loc.coords.longitude,
+    };
+
+    setLocal(coords);
+  };
+
+  if (!location) {
+    return <Text>Carregando localização...</Text>;
+  }
+
+  
 
   return (
 <View style = {styles.container}>
