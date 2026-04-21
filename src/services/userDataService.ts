@@ -51,4 +51,6 @@ export async function salvarNotaUsuario(uid:string,tituloNota:string, conteudoNo
     longitude: coords?.longitude || null,
     criadoEm: serverTimestamp()
   })
+
+  
 }

@@ -8,17 +8,20 @@ import { addDoc, collection, serverTimestamp }                        from "fire
 import MapView, { Marker } from 'react-native-maps';
 import * as Location from 'expo-location';
 import { salvarNotaUsuario } from "../../src/services/userDataService";
-import MapModal from "../components/mapaModal";
+import MapaModal from "../components/mapaModal";
+import DataHoraModal from "../components/dataHoraModal";
 
 export default function NotaDetalhe() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
 
+  const [data, setData] = useState<Date | null>(null);
   const [local, setLocal] = useState({ latitude: 0, longitude: 0 });
   const [titulo, setTitulo]     = useState("");
   const [conteudo, setConteudo] = useState("");
   const [original, setOriginal] = useState({ titulo: "", conteudo: "" });
-  const [modalVisible, setModalVisible] = useState(false);
+  const [modalMapa, setModalMapa] = useState(false);
+  const [modalDataHora, setModalDataHora] = useState(false);
 
 
 useEffect(() => {
@@ -131,9 +134,7 @@ useEffect(() => {
     return <Text>Carregando localização...</Text>;
   }
 
-  const abrirMapa = () => {
-  setModalVisible(true);
-};
+
 
   return (
 <View style = {styles.container}>
@@ -149,8 +150,12 @@ useEffect(() => {
   {id === "new" ? "Criar Nota" : "Editar Nota"}
 </Text>
 
-        <TouchableOpacity onPress={() => abrirMapa()}>
+        <TouchableOpacity onPress={() => setModalMapa(true)}>
         <Ionicons name="map" size={20} color="#4DA6FF" />
+        </TouchableOpacity>
+
+        <TouchableOpacity onPress={() => setModalDataHora(true)}>
+        <Ionicons name="calendar" size={20} color="#4DA6FF" />
         </TouchableOpacity>
 
         <TouchableOpacity onPress = {handleSalvar}>
@@ -158,7 +163,7 @@ useEffect(() => {
         </TouchableOpacity>
       </View>
 
-      {/* ✍️ CONTEÚDO */}
+      {/* CONTEÚDO */}
       <TextInput
         value                = {titulo}
         onChangeText         = {setTitulo}
@@ -176,11 +181,18 @@ useEffect(() => {
         style = {styles.conteudo}
       />
 
-    <MapModal
-  visible={modalVisible}
-  onClose={() => setModalVisible(false)}
+    <MapaModal
+  visible={modalMapa}
+  onClose={() => setModalMapa(false)}
   coords={local}
 />
+
+<DataHoraModal
+  visible={modalDataHora}
+  onClose={() => setModalDataHora(false)}
+  onConfirm={(date) => setData(date)}
+/>
+
     </View>
   )}
 
