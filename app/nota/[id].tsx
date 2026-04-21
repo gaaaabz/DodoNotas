@@ -37,12 +37,15 @@ useEffect(() => {
 
     if (snapshot.exists()) {
       const data = snapshot.data();
+      console.log("Dados da nota:", data);
+      const d    = data.dataAgendada ? data.dataAgendada.toDate() : null;
       const t    = data.tituloNota ?? "";
       const c    = data.conteudoNota ?? "";
 
       setTitulo(t);
       setConteudo(c);
       setOriginal({ titulo: t, conteudo: c });
+      setData(d);
     }
     console.log(data)
   };
@@ -194,6 +197,7 @@ useEffect(() => {
   visible={modalDataHora}
   onClose={() => setModalDataHora(false)}
   onConfirm={(date) => setData(date)}
+  dataInical={data}
 />
 
     </View>

@@ -7,18 +7,25 @@ type Props = {
   visible: boolean;
   onClose: () => void;
   onConfirm: (data: Date) => void;
+  dataInical: Date | null;
 };
 
-export default function DatahoraModal({ visible, onClose, onConfirm }: Props) {
+export default function DatahoraModal({ visible, onClose, onConfirm, dataInical }: Props) {
 
 
-  const [data, setData] = useState(new Date());
-  const [tempData, setTempData] = useState(new Date());
+  const [data, setData] = useState(dataInical ?? new Date());
   const [mode, setMode] = useState<'date' | 'time'>('date');
   const [showPicker, setShowPicker] = useState(false);
   const [tempoRestante, setTempoRestante] = useState('');
 
+    useEffect(() => {
+  if (visible && dataInical) {
+    setData(dataInical);
+  }
+}, [visible, dataInical]);
+
   useEffect(() => {
+    
     if (showPicker) return;
     const interval = setInterval(() => {
     const tempo = contagemRegressiva();
@@ -31,7 +38,7 @@ export default function DatahoraModal({ visible, onClose, onConfirm }: Props) {
 const handleChange = (event: any, selectedDate?: Date) => {
 
   if (event.type === 'set' && selectedDate) {
-    const novaData = new Date(tempData); 
+    const novaData = new Date(data); 
 
     if (mode === 'date') {
       // altera só a data
@@ -49,17 +56,18 @@ const handleChange = (event: any, selectedDate?: Date) => {
       );
     }
 
-    setTempData(novaData);
+    setData(novaData);
   }
   setShowPicker(false);
 };
  const confirmar = () => {
-  setData(tempData);
-  onConfirm(tempData);
+  setData(data);
+  onConfirm(data);
   onClose();
 };
 
   const contagemRegressiva = () => {
+    if (!data) return "";
     const agora = new Date().getTime();
     const diff = data.getTime() - agora;
     //console.log(diff, agora, data.getTime(), data)
@@ -77,7 +85,7 @@ const handleChange = (event: any, selectedDate?: Date) => {
 
   const abrirPicker = (tipo: 'date' | 'time') => {
   setMode(tipo);
-  setTempData(data); 
+  setData(data); 
   setShowPicker(true);
 };
 
@@ -101,7 +109,7 @@ const handleChange = (event: any, selectedDate?: Date) => {
 
       {showPicker && (
         <DateTimePicker
-          value={tempData}
+          value={data}
           mode={mode}
           display="default"
           onChange={handleChange}
