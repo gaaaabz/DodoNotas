@@ -11,6 +11,7 @@ import { salvarNotaUsuario } from "../../src/services/userDataService";
 import MapaModal from "../components/mapaModal";
 import DataHoraModal from "../components/dataHoraModal";
 import { agendarNotificacao, cancelarNotificacao, notificarAgora } from "../../src/services/notificationService";
+import {obterEndereco} from "../../src/services/geocodingService"
 
 export default function NotaDetalhe() {
   const { id } = useLocalSearchParams();
@@ -72,7 +73,7 @@ useEffect(() => {
     }
   };
 
-   const handleSalvar = async () => {
+  const handleSalvar = async () => {
   const user = auth.currentUser;
   if (!user) return;
 
@@ -82,17 +83,30 @@ useEffect(() => {
   }
 
   try {
+    await pegarLocalizacao();
+    let endereco: string | null = null;
 
+    if (local?.latitude && local?.longitude) {
+      endereco = await obterEndereco(local.latitude, local.longitude);
+    }
+
+    //cancelar notificação antiga
+    if (id !== "new" && notificationId) {
+      await cancelarNotificacao(notificationId);
+    }
+
+    // 🔔 criar nova notificação
     let novaNotificationId: string | null = null;
-    if (data) {
-    novaNotificationId = await agendarNotificacao(
-      "Lembrete",
-      titulo,
-      data
-    );
 
-  }
-      //Nota nova
+    if (data instanceof Date) {
+      novaNotificationId = await agendarNotificacao(
+        "Lembrete 📍",
+        titulo,
+        data
+      );
+    }
+
+    //nota nova
     if (id === "new") {
       await salvarNotaUsuario(
         user.uid,
@@ -100,38 +114,40 @@ useEffect(() => {
         conteudo.trim(),
         local,
         data,
-        notificationId
+        novaNotificationId,
+        endereco
       );
+
       await notificarAgora(
-  "Nota criada",
-  "Sua nota foi criada com sucesso!"
-);
+        "Nota criada 📝",
+        "Sua nota foi criada com sucesso!"
+      );
+
       Alert.alert("Sucesso", "Nota criada!");
       router.back();
       return;
     }
 
-      //edição
+    //atualização
     const ref = doc(db, "usuarios", user.uid, "notas", id as string);
-    pegarLocalizacao();
 
     await updateDoc(ref, {
       tituloNota: titulo.trim(),
       conteudoNota: conteudo.trim(),
       latitude: local?.latitude || null,
       longitude: local?.longitude || null,
-      dataAgendada: data,
-      notificationId: novaNotificationId || null,
+      endereco: endereco || null, // 👈 salva endereço
+      dataAgendada: data || null,
+      notificationId: novaNotificationId,
     });
-      if (notificationId) {
-  await cancelarNotificacao(notificationId);
-}
 
     setOriginal({ titulo, conteudo });
-      await notificarAgora(
-  "Nota atualizada",
-  "Sua nota foi atualizada com sucesso!"
-      );
+
+    await notificarAgora(
+      "Nota atualizada ✏️",
+      "Sua nota foi atualizada com sucesso!"
+    );
+
     Alert.alert("Sucesso", "Nota atualizada!");
   } catch (error) {
     console.log(error);

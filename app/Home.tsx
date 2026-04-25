@@ -3,17 +3,19 @@ import AsyncStorage                                                             
 import { useRouter }                                                                                                           from "expo-router";
 import { auth, db }                                                                                                            from "../src/services/firebaseConfig"
 import { deleteUser, onAuthStateChanged }                                                                                      from "firebase/auth";
-import ItemLoja                                                                                                                from "./components/NotasLista";
+import ItemNota                                                                                                                from "./components/NotasLista";
 import { SafeAreaView }                                                                                                        from "react-native-safe-area-context";
 import { useState, useEffect }                                                                                                 from "react";
-import { salvarNotaUsuario }                                                                                                   from "../src/services/userDataService";
+import { salvarNotaUsuario }                                                                                               from "../src/services/userDataService";
 import { collection, onSnapshot, orderBy, query, doc, deleteDoc, updateDoc }                                                   from "firebase/firestore"
 import { notificarAgora } from '../src/services/notificationService';
+import { obterEndereco } from '../src/services/geocodingService'   
 
 type Nota = {
-    id          : string,
-    tituloNota  : string,
-    conteudoNota: string
+  id: string,
+  tituloNota: string,
+  conteudoNota: string,
+  endereco?: string
 }
 
 export default function Home() {
@@ -55,9 +57,12 @@ export default function Home() {
         id          : doc.id,
         tituloNota  : data.tituloNota ?? "",
         conteudoNota: data.conteudoNota ?? "",
+        endereco : data.endereco?? ""
+        
       };
     });
 
+    console.log(dados)
     setnota(dados);
   },
   (error) => {
@@ -156,12 +161,13 @@ export default function Home() {
   contentContainerStyle = {styles.listaConteudo}
   columnWrapperStyle    = {{ justifyContent: "space-between" }}
   renderItem            = {({ item }) => (
-    <ItemLoja
-      id            = {item.id}
-      titulo        = {item.tituloNota}
-      conteudo      = {item.conteudoNota}
-      onDeletePress = {() => excluirNota(item)}
-    />
+    <ItemNota
+  id={item.id}
+  titulo={item.tituloNota}
+  conteudo={item.conteudoNota}
+  endereco={item.endereco}
+  onDeletePress = {() => excluirNota(item)}
+/>
   )}
 />
 

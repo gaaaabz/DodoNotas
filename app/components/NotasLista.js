@@ -2,14 +2,14 @@ import { StyleSheet, View, Text,Pressable } from "react-native";
 import {AntDesign,MaterialIcons}            from "@expo/vector-icons"
 import { useRouter }                        from "expo-router";
 
-export default function notas({id, titulo, conteudo, onDeletePress}) {
+export default function notas({id, titulo, conteudo, endereco, onDeletePress}) {
 
     const router = useRouter();
   
     return (
      <Pressable
       style   = {styles.container}
-      onPress = {() => router.push(`/nota/${id}`)}  // 🔥 navegação
+      onPress = {() => router.push(`/nota/${id}`)} 
     >
     <View style = {styles.container}>
       
@@ -39,6 +39,24 @@ export default function notas({id, titulo, conteudo, onDeletePress}) {
         {conteudo}
       </Text>
 
+      {endereco ? (
+  <View style={styles.enderecoContainer}>
+    <MaterialIcons name="location-on" size={14} color="#1F6FEB" />
+    
+    <Text
+      style={styles.enderecoText}
+      numberOfLines={2}
+      ellipsizeMode="tail"
+    >
+      {endereco}
+    </Text>
+  </View>
+) : (
+  <Text style={styles.enderecoVazio}>
+    Sem localização
+  </Text>
+)}
+
     </View>
     </Pressable>
   );
@@ -62,14 +80,33 @@ actions: {
 
 title: {
   color     : "#fff",
-  fontSize  : 18,       // 🔥 maior destaque
+  fontSize  : 18,       
   fontWeight: "bold",
   marginTop : 8
 },
 
 text: {
-  color    : "#aaa",   // 🔥 mais opaco
+  color    : "#aaa",   
   fontSize : 14,
   marginTop: 6
-}
+},
+
+enderecoContainer: {
+  flexDirection: "row",
+  alignItems: "center",
+  marginTop: 6,
+},
+
+enderecoText: {
+  color: "#8FA3BF", 
+  fontSize: 12,
+  marginLeft: 4,
+  flex: 1,
+},
+
+enderecoVazio: {
+  color: "#555",
+  fontSize: 12,
+  marginTop: 6,
+},
 })
