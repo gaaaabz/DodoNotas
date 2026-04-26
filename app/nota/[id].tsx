@@ -193,62 +193,65 @@ const pegarLocalizacaoComTimeout = async (timeout = 5000) => {
 };
 
   return (
-    <View style={styles.container}>
+    <View style = {styles.container}>
 
       {/* HEADER */}
-      <View style={styles.header}>
+      <View style = {styles.header}>
 
-        <TouchableOpacity onPress={handleVoltar}>
-          <Ionicons name="arrow-back" size={26} color="#fff" />
+        <TouchableOpacity onPress = {handleVoltar}>
+        <Ionicons         name    = "arrow-back" size = {26} color = "#fff" />
         </TouchableOpacity>
 
-        <Text style={styles.headerTitle}>
+        <Text style = {styles.headerTitle}>
           {id === "new" ? t("criarNota") : t("editarNota")}
         </Text>
 
-        <TouchableOpacity onPress={() => setModalMapa(true)}>
-          <Ionicons name="map" size={20} color="#4DA6FF" />
+        <TouchableOpacity onPress = {() => setModalMapa(true)}>
+        <Ionicons         name    = "map" size = {20} color = "#4DA6FF" />
         </TouchableOpacity>
 
-        <TouchableOpacity onPress={() => setModalDataHora(true)}>
-          <Ionicons name="calendar" size={20} color="#4DA6FF" />
+        <TouchableOpacity onPress = {() => setModalDataHora(true)}>
+        <Ionicons         name    = "calendar" size = {20} color = "#4DA6FF" />
         </TouchableOpacity>
 
-        <TouchableOpacity onPress={handleSalvar}>
-          <Ionicons name="save-outline" size={26} color="#4DA6FF" />
+        <TouchableOpacity onPress = {handleSalvar}>
+        <Ionicons         name    = "save-outline" size = {26} color = "#4DA6FF" />
         </TouchableOpacity>
 
       </View>
 
       {/* INPUTS */}
       <TextInput
-        value={titulo}
-        onChangeText={setTitulo}
-        placeholder={t("titulo")}
-        placeholderTextColor="#888"
-        style={styles.titulo}
+        value                = {titulo}
+        onChangeText         = {setTitulo}
+        placeholder          = {t("titulo")}
+        placeholderTextColor = "#888"
+        style                = {styles.titulo}
       />
 
       <TextInput
-        value={conteudo}
-        onChangeText={setConteudo}
-        placeholder={t("digiteNota")}
-        placeholderTextColor="#888"
+        value                = {conteudo}
+        onChangeText         = {setConteudo}
+        placeholder          = {t("digiteNota")}
+        placeholderTextColor = "#888"
         multiline
-        style={styles.conteudo}
+        style = {styles.conteudo}
       />
 
-      <MapaModal
-        visible={modalMapa}
-        onClose={() => setModalMapa(false)}
-        coords={local}
-      />
+      {local && (
+       <MapaModal
+          visible = {modalMapa}
+          onClose = {() => setModalMapa(false)}
+          coords  = {local}
+        />
+      )}
+
 
       <DataHoraModal
-        visible={modalDataHora}
-        onClose={() => setModalDataHora(false)}
-        onConfirm={(date) => setData(date)}
-        dataInical={data}
+        visible    = {modalDataHora}
+        onClose    = {() => setModalDataHora(false)}
+        onConfirm  = {(date) => setData(date)}
+        dataInical = {data}
       />
 
     </View>
