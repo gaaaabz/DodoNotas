@@ -3,18 +3,41 @@
 ##  Descrição do projeto
 
 O DodoNotas é um aplicativo mobile desenvolvido com React Native que permite ao usuário criar, visualizar e gerenciar notas de forma simples e prática.
+As notas são associadas à um endereço e podem ser agendadas para serem lembradas e apresentar uma contagem regressiva até a data
 
-Os dados das notas são armazenados em tempo real utilizando o Firebase Firestore, garantindo persistência e sincronização eficiente.
-
-O app possui funcionalidades como:
-
-* Criar notas
-* Listar notas
-* Visualizar detalhes de uma nota
-* Armazenamento em nuvem com Firebase
+Os dados das notas são armazenados em tempo real utilizando o Firebase Firestore, garantindo persistência e sincronização dos dados.
 
 ---
+# Como usar
+Você pode acessar o Dodo notas de 2 formas intalando o apk no seu emulador ou dispositivo android, ou rodando um servidor e utilizando o expo-go.
 
+## Executar o servidor
+-  Clone esse repositório e entre na pasta
+```bash
+git clone https://github.com/gaaaabz/DodoNotas.git
+cd DodoNotas
+```
+
+- Baixe as dependencias 
+```bash
+npm i
+```
+
+- Rode o servidor 
+```bash
+npx expo start
+```
+
+- Desse modo você pode acessar utilizando o aplicativo do expo-go tanto no seu emulador android quanto no seu dispositivo móvel.
+
+## Instalação 
+- Baixe o arquivo apk acessando o link a baixo e clicando em "install"
+  https://expo.dev/accounts/gabrielggc/projects/DodoNotas/builds/69b5f53f-6f05-4058-abbd-523253c7c806
+
+- Execute o aplicativo apk, e o app está pronto para uso
+  OBS: Como mencionado no vídeo com essa forma a função de exibir o pin no mapa não funciona 
+
+---
 ## Tecnologias utilizadas
 
 * React Native
@@ -22,92 +45,13 @@ O app possui funcionalidades como:
 * TypeScript
 * Firebase (Firestore)
 * JavaScript
+• i18next 
+• react-native-maps & expo-location 
+• Firebase Cloud Messaging
+• EAS Build
 
 ---
 
-##  Como rodar o projeto
-
-### 1. Pré-requisitos
-
-Antes de começar, você precisa ter instalado:
-
-* Node.js
-* npm ou yarn
-* Expo CLI
-
-```bash
-npm install -g expo-cli
-```
-
----
-
-### 2. Instalar dependências
-
-```bash
-npm install
-```
-
----
-
-### 3. Configurar o Firebase
-
-No arquivo:
-
-```
-src/services/firebaseConfig.tsx
-```
-
-Adicione suas credenciais do Firebase (caso ainda não estejam configuradas).
-
----
-
-### 4. Rodar o projeto
-
-```bash
-npm start
-```
-
-Depois disso:
-
-* Use o app **Expo Go** no celular para escanear o QR Code
-  ou
-* Rode em um emulador Android/iOS
-
----
-
-## Persistência de dados (Firestore)
-
-O projeto utiliza o **Firebase Firestore** para:
-
-* Armazenar notas
-* Recuperar dados em tempo real
-* Garantir persistência na nuvem
-
-Arquivo responsável:
-
-```
-src/services/userDataService.ts
-```
-
----
-
-## 📂 Estrutura básica do projeto
-
-```
-app/
- ├── Home.tsx
- ├── CadastrarScreen.tsx
- ├── nota/[id].tsx
- ├── components/
- │    └── NotasLista.js
-
-src/
- └── services/
-      ├── firebaseConfig.tsx
-      └── userDataService.ts
-```
-
----
 
 ## Projeto feito por: 
 
@@ -117,4 +61,4 @@ src/
 
 ## Video: 
 
-https://youtu.be/aWBhcecG2h0
+https://www.youtube.com/watch?v=hfXiVpeM8Mk
