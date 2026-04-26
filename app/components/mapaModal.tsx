@@ -41,7 +41,7 @@ export default function MapModal({ visible, onClose, coords }: Props) {
             borderRadius: 10
           }}
         >
-          <Text style={{ color: '#fff' }}>Fechar</Text>
+          <Text style={{ color: '#fff' }}>X</Text>
         </TouchableOpacity>
 
       </View>

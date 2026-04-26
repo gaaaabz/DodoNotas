@@ -12,6 +12,7 @@ import { agendarNotificacao, cancelarNotificacao, notificarAgora } from "../../s
 import { obterEndereco } from "../../src/services/geocodingService";
 import { useTranslation } from "react-i18next";
 
+
 export default function NotaDetalhe() {
 
   const { t } = useTranslation();
@@ -30,7 +31,6 @@ export default function NotaDetalhe() {
   useEffect(() => {
 
 
-    pegarLocalizacao();
 
     const carregarNota = async () => {
       const user = auth.currentUser;
@@ -38,6 +38,8 @@ export default function NotaDetalhe() {
 
       const ref = doc(db, "usuarios", user.uid, "notas", id as string);
       const snapshot = await getDoc(ref);
+      pegarLocalizacaoComTimeout();
+
 
       if (snapshot.exists()) {
         const data = snapshot.data();
@@ -83,13 +85,14 @@ export default function NotaDetalhe() {
     }
 
     try {
-      await pegarLocalizacao();
-
-      let endereco: string | null = null;
+  
+          let endereco: string | null = null;
 
       if (local?.latitude && local?.longitude) {
         endereco = await obterEndereco(local.latitude, local.longitude);
-      }
+      }         
+
+    
 
       // cancelar antiga
       if (id !== "new" && notificationId) {
@@ -173,9 +176,21 @@ export default function NotaDetalhe() {
     });
   };
 
-  if (!local) {
-    return <Text style={{ color: "#fff" }}>{t("carregandoLocalizacao")}</Text>;
+const pegarLocalizacaoComTimeout = async (timeout = 5000) => {
+  try {
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error("Timeout")), timeout)
+    );
+
+    await Promise.race([
+      pegarLocalizacao(),
+      timeoutPromise
+    ]);
+
+  } catch (error) {
+    console.log("Localização falhou ou demorou:", error);
   }
+};
 
   return (
     <View style={styles.container}>
