@@ -43,7 +43,7 @@ export async function registrarUltimoLogin(uid:string,email:string|null) {
 }
 
   //Função para salvar o produto na subcoleção do usuário: usuarios/{uid}/produtos
-export async function salvarNotaUsuario(uid:string,tituloNota:string, conteudoNota:String, coords:{ latitude: number; longitude: number }, data: Date| null, notificationId: string | null, endereco: string | null) {
+export async function salvarNotaUsuario(uid:string,tituloNota:string, conteudoNota:String, coords:{ latitude: number; longitude: number }| null, data: Date| null, notificationId: string | null, endereco: string | null) {
    await addDoc(collection(db, "usuarios", uid, "notas"), {
     tituloNota,
     conteudoNota,

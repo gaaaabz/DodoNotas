@@ -1,78 +1,79 @@
-import { Link }                                                              from 'expo-router';
-import React   ,                                                                 { useState, useEffect } from 'react';
-import { Image, View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
-import { auth }                                                              from "../src/services/firebaseConfig"
-import { signInWithEmailAndPassword, sendPasswordResetEmail }                from 'firebase/auth';
-import { useRouter }                                                         from 'expo-router';
-import AsyncStorage                                                          from '@react-native-async-storage/async-storage';
-import { registrarUltimoLogin }                                              from '../src/services/userDataService';
-import { useTranslation} from 'react-i18next';
-import { notificarAgora } from '../src/services/notificationService';
-
-
+import { Link }                                                       from 'expo-router';
+import React   ,                                                          { useState, useEffect } from 'react';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import { auth }                                                       from "../src/services/firebaseConfig";
+import { signInWithEmailAndPassword }                                 from 'firebase/auth';
+import { useRouter }                                                  from 'expo-router';
+import AsyncStorage                                                   from '@react-native-async-storage/async-storage';
+import { registrarUltimoLogin }                                       from '../src/services/userDataService';
+import { useTranslation }                                             from 'react-i18next';
+import { notificarAgora }                                             from '../src/services/notificationService';
 
 export default function LoginScreen() {
 
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
-  const { t, i18n } = useTranslation()
 
-  const router = useRouter()
+  const { t, i18n } = useTranslation();
+  const router      = useRouter();
+
   useEffect(() => {
     const verificarUsuarioLogado = async () => {
       try {
-        const usuarioSalvo = await AsyncStorage.getItem("@user")
+        const usuarioSalvo = await AsyncStorage.getItem("@user");
         if (usuarioSalvo) {
-          router.replace("/Home")
+          router.replace("/Home");
         }
       } catch (error) {
-        console.log("Error ao verificar login: ", error)
+        console.log("Erro ao verificar login:", error);
       }
-    }
-    verificarUsuarioLogado()
-  }, [])
+    };
+
+    verificarUsuarioLogado();
+  }, [router]);
 
   const handleLogin = () => {
     if (!email || !senha) {
-      Alert.alert(t("atencao"), t('preenchaCampos'));
+      Alert.alert(t("atencao"), t("preenchaCampos"));
       return;
     }
+
     signInWithEmailAndPassword(auth, email, senha)
       .then(async (userCredential) => {
 
         const user = userCredential.user;
-        await registrarUltimoLogin(user.uid, user.email)
 
+        await registrarUltimoLogin(user.uid, user.email);
+        await AsyncStorage.setItem("@user", JSON.stringify(user));
 
-        await AsyncStorage.setItem("@user", JSON.stringify(user))
         await notificarAgora(
-  "Boas vindas",
-  "Você entrou no Dodonotas!"
-);
+          t("boasVindas"),
+          t("loginSucesso")
+        );
 
-        router.replace("/Home")
+        router.replace("/Home");
       })
       .catch((error) => {
-        const errorCode    = error.code;
-        const errorMessage = error.message;
-        console.log(errorCode, errorMessage)
-      Alert.alert(t("atencao"), t("credenciaisInvalidas"), [
-          { text: "OK" }
-        ])
+        console.log(error.code, error.message);
+
+        Alert.alert(
+          t("atencao"),
+          t("credenciaisInvalidas"),
+          [{ text: t("ok") }]
+        );
       });
   };
 
-    const mudarIdioma = (lang: string) => {
-    i18n.changeLanguage(lang)
-  }
-
+  const mudarIdioma = (lang: string) => {
+    i18n.changeLanguage(lang);
+  };
 
   return (
     <View style = {styles.container}>
-    <Text style = {styles.titulo}>🦤dodonotas🦤</Text>
 
+      <Text style = {styles.titulo}>🦤dodonotas🦤</Text>
 
-      {/* Campo Email */}
+      {/* Email */}
       <TextInput
         style                = {styles.input}
         placeholder          = {t("email")}
@@ -83,7 +84,7 @@ export default function LoginScreen() {
         onChangeText         = {setEmail}
       />
 
-      {/* Campo Senha */}
+      {/* Senha */}
       <TextInput
         style                = {styles.input}
         placeholder          = {t("senha")}
@@ -93,42 +94,48 @@ export default function LoginScreen() {
         onChangeText = {setSenha}
       />
 
-      {/* Botão */}
+      {/* Botão Login */}
       <TouchableOpacity style = {styles.botao} onPress = {handleLogin}>
       <Text             style = {styles.textoBotao}>{t("login")}</Text>
       </TouchableOpacity>
 
-      <View style = {{alignItems:"center"}}>
-      <Link href  = "CadastrarScreen" style = {{ marginTop: 20, color: 'white' }}>{t("cadastrar")}</Link>
+      {/* Link cadastro */}
+      <View style = {{ alignItems: "center" }}>
+      <Link href  = "CadastrarScreen" style = {{ marginTop: 20, color: 'white' }}>
+          {t("cadastrar")}
+        </Link>
       </View>
 
-        <View style={{ flexDirection: "row", justifyContent: "space-evenly", marginTop: 30 }}>
-        <TouchableOpacity
-          style={[styles.botao, { width: 110 }]}
-          onPress={() => mudarIdioma("en")}>
-          <Text>🇬🇧 English</Text>
-
-        </TouchableOpacity>
+      {/* Idiomas */}
+      <View style = {styles.langContainer}>
 
         <TouchableOpacity
-          style={[styles.botao, { width: 120 }]}
-          onPress={() => mudarIdioma("pt")}>
-            <Text>🇧🇷 Português</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[styles.botao, { width: 120 }]}
-          onPress={() => mudarIdioma("jp")}
+          style   = {styles.langButton}
+          onPress = {() => mudarIdioma("en")}
         >
-        <Text>🇯🇵 日本語</Text>
+          <Text>🇬🇧 English</Text>
         </TouchableOpacity>
+
+        <TouchableOpacity
+          style   = {styles.langButton}
+          onPress = {() => mudarIdioma("pt")}
+        >
+          <Text>🇧🇷 Português</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style   = {styles.langButton}
+          onPress = {() => mudarIdioma("jp")}
+        >
+          <Text>🇯🇵 日本語</Text>
+        </TouchableOpacity>
+
       </View>
 
     </View>
   );
 }
 
-  // Estilização
 const styles = StyleSheet.create({
   container: {
     flex           : 1,
@@ -136,6 +143,7 @@ const styles = StyleSheet.create({
     justifyContent : 'center',
     padding        : 20,
   },
+
   titulo: {
     fontSize    : 28,
     fontWeight  : 'bold',
@@ -143,6 +151,7 @@ const styles = StyleSheet.create({
     marginBottom: 30,
     textAlign   : 'center',
   },
+
   input: {
     backgroundColor: '#1E1E1E',
     color          : '#fff',
@@ -153,15 +162,31 @@ const styles = StyleSheet.create({
     borderWidth    : 1,
     borderColor    : '#333',
   },
+
   botao: {
     backgroundColor: '#1F6FEB',
     padding        : 15,
     borderRadius   : 10,
     alignItems     : 'center',
   },
+
   textoBotao: {
     color     : '#fff',
     fontSize  : 18,
     fontWeight: 'bold',
+  },
+
+  langContainer: {
+    flexDirection : "row",
+    justifyContent: "space-evenly",
+    marginTop     : 30,
+  },
+
+  langButton: {
+    backgroundColor: '#1F6FEB',
+    padding        : 10,
+    borderRadius   : 8,
+    width          : 110,
+    alignItems     : "center",
   },
 });

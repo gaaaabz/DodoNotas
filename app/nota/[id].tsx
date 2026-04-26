@@ -1,71 +1,71 @@
 import { View, TextInput, StyleSheet, Alert, TouchableOpacity, Text } from "react-native";
-import { useLocalSearchParams, useRouter }                            from "expo-router";
-import { useEffect, useState }                                        from "react";
-import { doc, getDoc, updateDoc }                                     from "firebase/firestore";
-import { db, auth }                                                   from "../../src/services/firebaseConfig";
-import { Ionicons }                                                   from "@expo/vector-icons";
-import { addDoc, collection, serverTimestamp }                        from "firebase/firestore";
-import MapView, { Marker } from 'react-native-maps';
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { useEffect, useState } from "react";
+import { doc, getDoc, updateDoc } from "firebase/firestore";
+import { db, auth } from "../../src/services/firebaseConfig";
+import { Ionicons } from "@expo/vector-icons";
 import * as Location from 'expo-location';
 import { salvarNotaUsuario } from "../../src/services/userDataService";
 import MapaModal from "../components/mapaModal";
 import DataHoraModal from "../components/dataHoraModal";
 import { agendarNotificacao, cancelarNotificacao, notificarAgora } from "../../src/services/notificationService";
-import {obterEndereco} from "../../src/services/geocodingService"
+import { obterEndereco } from "../../src/services/geocodingService";
+import { useTranslation } from "react-i18next";
 
 export default function NotaDetalhe() {
+
+  const { t } = useTranslation();
   const { id } = useLocalSearchParams();
   const router = useRouter();
 
   const [data, setData] = useState<Date | null>(null);
-  const [local, setLocal] = useState({ latitude: 0, longitude: 0 });
-  const [titulo, setTitulo]     = useState("");
+  const [local, setLocal] = useState<{ latitude: number; longitude: number } | null>(null);
+  const [titulo, setTitulo] = useState("");
   const [conteudo, setConteudo] = useState("");
   const [original, setOriginal] = useState({ titulo: "", conteudo: "" });
   const [modalMapa, setModalMapa] = useState(false);
   const [modalDataHora, setModalDataHora] = useState(false);
   const [notificationId, setNotificationId] = useState<string | null>(null);
 
+  useEffect(() => {
 
-useEffect(() => {
-  if (id === "new") return;
-  pegarLocalizacao();
 
-  const carregarNota = async () => {
-    const user = auth.currentUser;
-    if (!user) return;
+    pegarLocalizacao();
 
-    const ref      = doc(db, "usuarios", user.uid, "notas", id as string);
-    const snapshot = await getDoc(ref);
+    const carregarNota = async () => {
+      const user = auth.currentUser;
+      if (!user) return;
 
-    if (snapshot.exists()) {
-      const data = snapshot.data();
-      console.log("Dados da nota:", data);
-      const d    = data.dataAgendada ? data.dataAgendada.toDate() : null;
-      const t    = data.tituloNota ?? "";
-      const c    = data.conteudoNota ?? "";
-      const n    = data.notificationId ?? null;
+      const ref = doc(db, "usuarios", user.uid, "notas", id as string);
+      const snapshot = await getDoc(ref);
 
-      setTitulo(t);
-      setConteudo(c);
-      setOriginal({ titulo: t, conteudo: c });
-      setData(d);
-      setNotificationId(n);
-    }
-    console.log(data)
-  };
+      if (snapshot.exists()) {
+        const data = snapshot.data();
 
-  carregarNota();
-}, []);
+        const d = data.dataAgendada ? data.dataAgendada.toDate() : null;
+        const t = data.tituloNota ?? "";
+        const c = data.conteudoNota ?? "";
+        const n = data.notificationId ?? null;
 
-    const handleVoltar = () => {
+        setTitulo(t);
+        setConteudo(c);
+        setOriginal({ titulo: t, conteudo: c });
+        setData(d);
+        setNotificationId(n);
+      }
+    };
+
+    carregarNota();
+  }, []);
+
+  const handleVoltar = () => {
     if (titulo !== original.titulo || conteudo !== original.conteudo) {
       Alert.alert(
-        "Descartar alterações?",
-        "Você perderá as alterações não salvas.",
+        t("descartarAlteracoes"),
+        t("perderAlteracoes"),
         [
-          { text: "Cancelar", style: "cancel" },
-          { text: "Sair", style: "destructive", onPress: () => router.back() }
+          { text: t("cancelar"), style: "cancel" },
+          { text: t("sair"), style: "destructive", onPress: () => router.back() }
         ]
       );
     } else {
@@ -74,208 +74,203 @@ useEffect(() => {
   };
 
   const handleSalvar = async () => {
-  const user = auth.currentUser;
-  if (!user) return;
+    const user = auth.currentUser;
+    if (!user) return;
 
-  if (!titulo.trim()) {
-    Alert.alert("Atenção", "Digite um título");
-    return;
-  }
-
-  try {
-    await pegarLocalizacao();
-    let endereco: string | null = null;
-
-    if (local?.latitude && local?.longitude) {
-      endereco = await obterEndereco(local.latitude, local.longitude);
+    if (!titulo.trim()) {
+      Alert.alert(t("atencao"), t("digiteTitulo"));
+      return;
     }
 
-    //cancelar notificação antiga
-    if (id !== "new" && notificationId) {
-      await cancelarNotificacao(notificationId);
-    }
+    try {
+      await pegarLocalizacao();
 
-    // 🔔 criar nova notificação
-    let novaNotificationId: string | null = null;
+      let endereco: string | null = null;
 
-    if (data instanceof Date) {
-      novaNotificationId = await agendarNotificacao(
-        "Lembrete 📍",
-        titulo,
-        data
-      );
-    }
+      if (local?.latitude && local?.longitude) {
+        endereco = await obterEndereco(local.latitude, local.longitude);
+      }
 
-    //nota nova
-    if (id === "new") {
-      await salvarNotaUsuario(
-        user.uid,
-        titulo.trim(),
-        conteudo.trim(),
-        local,
-        data,
-        novaNotificationId,
-        endereco
-      );
+      // cancelar antiga
+      if (id !== "new" && notificationId) {
+        await cancelarNotificacao(notificationId);
+      }
+
+      // nova notificação
+      let novaNotificationId: string | null = null;
+
+      if (data instanceof Date) {
+        novaNotificationId = await agendarNotificacao(
+          t("lembrete"),
+          titulo,
+          data
+        );
+      }
+
+      // nova nota
+      if (id === "new") {
+        await salvarNotaUsuario(
+          user.uid,
+          titulo.trim(),
+          conteudo.trim(),
+          local,
+          data,
+          novaNotificationId,
+          endereco
+        );
+
+        await notificarAgora(
+          t("notaCriada"),
+          t("notaCriadaSucesso")
+        );
+
+        Alert.alert(t("sucesso"), t("notaCriada"));
+        router.back();
+        return;
+      }
+
+      // atualização
+      const ref = doc(db, "usuarios", user.uid, "notas", id as string);
+
+      await updateDoc(ref, {
+        tituloNota: titulo.trim(),
+        conteudoNota: conteudo.trim(),
+        latitude: local?.latitude || null,
+        longitude: local?.longitude || null,
+        endereco: endereco || null,
+        dataAgendada: data || null,
+        notificationId: novaNotificationId,
+      });
+
+      setOriginal({ titulo, conteudo });
 
       await notificarAgora(
-        "Nota criada 📝",
-        "Sua nota foi criada com sucesso!"
+        t("notaAtualizada"),
+        t("notaAtualizadaSucesso")
       );
 
-      Alert.alert("Sucesso", "Nota criada!");
-      router.back();
-      return;
+      Alert.alert(t("sucesso"), t("notaAtualizada"));
+
+    } catch (error) {
+      console.log(error);
+      Alert.alert(t("erro"), t("erroSalvar"));
     }
-
-    //atualização
-    const ref = doc(db, "usuarios", user.uid, "notas", id as string);
-
-    await updateDoc(ref, {
-      tituloNota: titulo.trim(),
-      conteudoNota: conteudo.trim(),
-      latitude: local?.latitude || null,
-      longitude: local?.longitude || null,
-      endereco: endereco || null, // 👈 salva endereço
-      dataAgendada: data || null,
-      notificationId: novaNotificationId,
-    });
-
-    setOriginal({ titulo, conteudo });
-
-    await notificarAgora(
-      "Nota atualizada ✏️",
-      "Sua nota foi atualizada com sucesso!"
-    );
-
-    Alert.alert("Sucesso", "Nota atualizada!");
-  } catch (error) {
-    console.log(error);
-    Alert.alert("Erro", "Não foi possível salvar.");
-  }
-};
-
-
-
-  const pegarLocalizacao = async () => {
-    //Permissão
-    const { status } = await Location.requestForegroundPermissionsAsync();
-    console.log("Permissão de localização:", status);
-    if (status !== 'granted') {
-      alert('Permissão negada');
-      return;
-    }
-
-    //Pegar localização
-    console.log("Obtendo localização...");
-    const loc = await Location.getCurrentPositionAsync({});
-    
-    const coords = {
-      latitude: loc.coords.latitude,
-      longitude: loc.coords.longitude,
-    };
-
-    setLocal(coords);
   };
 
-  if (!location) {
-    return <Text>Carregando localização...</Text>;
+  const pegarLocalizacao = async () => {
+    const { status } = await Location.requestForegroundPermissionsAsync();
+
+    if (status !== 'granted') {
+      Alert.alert(t("erro"), t("permissaoNegada"));
+      return;
+    }
+
+    const loc = await Location.getCurrentPositionAsync({});
+
+    setLocal({
+      latitude: loc.coords.latitude,
+      longitude: loc.coords.longitude,
+    });
+  };
+
+  if (!local) {
+    return <Text style={{ color: "#fff" }}>{t("carregandoLocalizacao")}</Text>;
   }
 
-
-
   return (
-<View style = {styles.container}>
-      
-      {/* HEADER */}
-      <View             style   = {styles.header}>
-      <TouchableOpacity onPress = {handleVoltar}>
-      <Ionicons         name    = "arrow-back" size = {26} color = "#fff" />
-        </TouchableOpacity>
-        
+    <View style={styles.container}>
 
-        <Text style = {styles.headerTitle}>
-  {id === "new" ? "Criar Nota" : "Editar Nota"}
-</Text>
+      {/* HEADER */}
+      <View style={styles.header}>
+
+        <TouchableOpacity onPress={handleVoltar}>
+          <Ionicons name="arrow-back" size={26} color="#fff" />
+        </TouchableOpacity>
+
+        <Text style={styles.headerTitle}>
+          {id === "new" ? t("criarNota") : t("editarNota")}
+        </Text>
 
         <TouchableOpacity onPress={() => setModalMapa(true)}>
-        <Ionicons name="map" size={20} color="#4DA6FF" />
+          <Ionicons name="map" size={20} color="#4DA6FF" />
         </TouchableOpacity>
 
         <TouchableOpacity onPress={() => setModalDataHora(true)}>
-        <Ionicons name="calendar" size={20} color="#4DA6FF" />
+          <Ionicons name="calendar" size={20} color="#4DA6FF" />
         </TouchableOpacity>
 
-        <TouchableOpacity onPress = {handleSalvar}>
-        <Ionicons         name    = "save-outline" size = {26} color = "#4DA6FF" />
+        <TouchableOpacity onPress={handleSalvar}>
+          <Ionicons name="save-outline" size={26} color="#4DA6FF" />
         </TouchableOpacity>
+
       </View>
 
-      {/* CONTEÚDO */}
+      {/* INPUTS */}
       <TextInput
-        value                = {titulo}
-        onChangeText         = {setTitulo}
-        placeholder          = "Título"
-        placeholderTextColor = "#888"
-        style                = {styles.titulo}
+        value={titulo}
+        onChangeText={setTitulo}
+        placeholder={t("titulo")}
+        placeholderTextColor="#888"
+        style={styles.titulo}
       />
 
       <TextInput
-        value                = {conteudo}
-        onChangeText         = {setConteudo}
-        placeholder          = "Digite sua nota..."
-        placeholderTextColor = "#888"
+        value={conteudo}
+        onChangeText={setConteudo}
+        placeholder={t("digiteNota")}
+        placeholderTextColor="#888"
         multiline
-        style = {styles.conteudo}
+        style={styles.conteudo}
       />
 
-    <MapaModal
-  visible={modalMapa}
-  onClose={() => setModalMapa(false)}
-  coords={local}
-/>
+      <MapaModal
+        visible={modalMapa}
+        onClose={() => setModalMapa(false)}
+        coords={local}
+      />
 
-<DataHoraModal
-  visible={modalDataHora}
-  onClose={() => setModalDataHora(false)}
-  onConfirm={(date) => setData(date)}
-  dataInical={data}
-/>
+      <DataHoraModal
+        visible={modalDataHora}
+        onClose={() => setModalDataHora(false)}
+        onConfirm={(date) => setData(date)}
+        dataInical={data}
+      />
 
     </View>
-  )}
+  );
+}
 
-    const styles = StyleSheet.create({
+const styles = StyleSheet.create({
   container: {
-    flex             : 1,
-    backgroundColor  : "#0D1117",   // preto azulado
-    paddingTop       : 50,
+    flex: 1,
+    backgroundColor: "#0D1117",
+    paddingTop: 50,
     paddingHorizontal: 16,
   },
 
   header: {
-    flexDirection : "row",
+    flexDirection: "row",
     justifyContent: "space-between",
-    alignItems    : "center",
-    marginBottom  : 20,
+    alignItems: "center",
+    marginBottom: 20,
   },
 
   headerTitle: {
-    color     : "#fff",
-    fontSize  : 18,
+    color: "#fff",
+    fontSize: 18,
     fontWeight: "600",
   },
 
   titulo: {
-    color       : "#fff",
-    fontSize    : 22,
-    fontWeight  : "bold",
+    color: "#fff",
+    fontSize: 22,
+    fontWeight: "bold",
     marginBottom: 10,
   },
 
   conteudo: {
-    color            : "#ccc",
-    fontSize         : 16,
+    color: "#ccc",
+    fontSize: 16,
     textAlignVertical: "top",
   },
 });

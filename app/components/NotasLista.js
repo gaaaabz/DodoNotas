@@ -1,10 +1,12 @@
 import { StyleSheet, View, Text,Pressable } from "react-native";
 import {AntDesign,MaterialIcons}            from "@expo/vector-icons"
 import { useRouter }                        from "expo-router";
+import { useTranslation }                                             from 'react-i18next';
 
 export default function notas({id, titulo, conteudo, endereco, onDeletePress}) {
 
     const router = useRouter();
+    const { t }  = useTranslation();
   
     return (
      <Pressable
@@ -53,7 +55,7 @@ export default function notas({id, titulo, conteudo, endereco, onDeletePress}) {
   </View>
 ) : (
   <Text style={styles.enderecoVazio}>
-    Sem localização
+    {t("semLocalizacao")}
   </Text>
 )}
 

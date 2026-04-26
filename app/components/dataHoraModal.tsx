@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { Modal, View, Text, TouchableOpacity } from 'react-native';
-import DateTimePicker from '@react-native-community/datetimepicker';
-import { StyleSheet } from 'react-native';
+import { Modal, View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
+import { useTranslation } from 'react-i18next';
 
 type Props = {
   visible: boolean;
@@ -12,136 +12,141 @@ type Props = {
 
 export default function DatahoraModal({ visible, onClose, onConfirm, dataInical }: Props) {
 
+  const { t } = useTranslation();
 
-  const [data, setData] = useState(dataInical ?? new Date());
+  const [data, setData] = useState<Date>(dataInical ?? new Date());
   const [mode, setMode] = useState<'date' | 'time'>('date');
   const [showPicker, setShowPicker] = useState(false);
   const [tempoRestante, setTempoRestante] = useState('');
 
-    useEffect(() => {
-  if (visible && dataInical) {
-    setData(dataInical);
-  }
-}, [visible, dataInical]);
-
   useEffect(() => {
-    
+    if (visible && dataInical) {
+      setData(dataInical);
+    }
+  }, [visible, dataInical]);
+
+  //contador
+  useEffect(() => {
     if (showPicker) return;
+
     const interval = setInterval(() => {
-    const tempo = contagemRegressiva();
-    setTempoRestante(tempo);
-  }, 1000);
+      setTempoRestante(contagemRegressiva());
+    }, 1000);
 
-  return () => clearInterval(interval);
-}, [data, showPicker]);
+    return () => clearInterval(interval);
+  }, [data, showPicker]);
 
-const handleChange = (event: any, selectedDate?: Date) => {
+  const handleChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
 
-  if (event.type === 'set' && selectedDate) {
-    const novaData = new Date(data); 
-
-    if (mode === 'date') {
-      // altera só a data
-      novaData.setFullYear(
-        selectedDate.getFullYear(),
-        selectedDate.getMonth(),
-        selectedDate.getDate()
-      );
-    } else {
-      // altera só a hora
-      novaData.setHours(
-        selectedDate.getHours(),
-        selectedDate.getMinutes(),
-        0
-      );
+    if (event.type === 'dismissed') {
+      setShowPicker(false);
+      return;
     }
 
-    setData(novaData);
-  }
-  setShowPicker(false);
-};
- const confirmar = () => {
-  setData(data);
-  onConfirm(data);
-  onClose();
-};
+    if (selectedDate) {
+      const novaData = new Date(data);
+
+      if (mode === 'date') {
+        novaData.setFullYear(
+          selectedDate.getFullYear(),
+          selectedDate.getMonth(),
+          selectedDate.getDate()
+        );
+      } else {
+        novaData.setHours(
+          selectedDate.getHours(),
+          selectedDate.getMinutes(),
+          0
+        );
+      }
+
+      setData(novaData);
+    }
+
+    setShowPicker(false);
+  };
+
+  const confirmar = () => {
+    onConfirm(data);
+    onClose();
+  };
 
   const contagemRegressiva = () => {
-    if (!data) return "";
     const agora = new Date().getTime();
     const diff = data.getTime() - agora;
-    //console.log(diff, agora, data.getTime(), data)
 
     if (diff <= 0) {
-      return("Essa data já passou!");
+      return t("tempoEsgotado");
     }
-    const dias = Math.floor(diff/ (1000 * 60 * 60 * 24));
+
+    const dias = Math.floor(diff / (1000 * 60 * 60 * 24));
     const horas = Math.floor((diff / (1000 * 60 * 60)) % 24);
     const minutos = Math.floor((diff / (1000 * 60)) % 60);
     const segundos = Math.floor((diff / 1000) % 60);
 
-    return(`${dias}d ${horas}h ${minutos}m ${segundos}s`);
-  }
+    return `${dias}d ${horas}h ${minutos}m ${segundos}s`;
+  };
 
   const abrirPicker = (tipo: 'date' | 'time') => {
-  setMode(tipo);
-  setData(data); 
-  setShowPicker(true);
-};
+    setMode(tipo);
+    setShowPicker(true);
+  };
 
   return (
-   <Modal visible={visible} transparent animationType="slide">
-  <View style={styles.overlay}>
-    
-    <View style={styles.modal}>
+    <Modal visible={visible} transparent animationType="slide">
+      <View style={styles.overlay}>
 
-      <Text style={[styles.text, styles.title]}>
-        Escolher data e hora
-      </Text>
+        <View style={styles.modal}>
 
-      <Text style={styles.text}>
-        {data.toLocaleString()}
-      </Text>
+          <Text style={[styles.text, styles.title]}>
+            {t("escolherDataHora")}
+          </Text>
 
-      <Text style={[styles.text, styles.timer]}>
-        ⏳ {tempoRestante}
-      </Text>
+          <Text style={styles.text}>
+            {data.toLocaleString()}
+          </Text>
 
-      {showPicker && (
-        <DateTimePicker
-          value={data}
-          mode={mode}
-          display="default"
-          onChange={handleChange}
-        />
-      )}
+          <Text style={[styles.text, styles.timer]}>
+            ⏳ {tempoRestante}
+          </Text>
 
-      <View style={styles.row}>
-        
-<TouchableOpacity onPress={() => abrirPicker('date')}>
-  <Text style={styles.text}>📅 Data</Text>
-</TouchableOpacity>
+          {showPicker && (
+            <DateTimePicker
+              value={data}
+              mode={mode}
+              display="default"
+              onChange={handleChange}
+            />
+          )}
 
-<TouchableOpacity onPress={() => abrirPicker('time')}>
-  <Text style={styles.text}>⏰ Hora</Text>
-</TouchableOpacity>
+          <View style={styles.row}>
 
+            <TouchableOpacity onPress={() => abrirPicker('date')}>
+              <Text style={styles.text}>📅 {t("data")}</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity onPress={() => abrirPicker('time')}>
+              <Text style={styles.text}>⏰ {t("hora")}</Text>
+            </TouchableOpacity>
+
+          </View>
+
+          <TouchableOpacity style={styles.button} onPress={confirmar}>
+            <Text style={[styles.text, styles.buttonText]}>
+              {t("confirmar")}
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity onPress={onClose} style={styles.cancel}>
+            <Text style={styles.text}>{t("cancelar")}</Text>
+          </TouchableOpacity>
+
+        </View>
       </View>
+    </Modal>
+  );
+}
 
-      <TouchableOpacity style={styles.button} onPress={confirmar}>
-        <Text style={[styles.text, styles.buttonText]}>
-          Confirmar
-        </Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity onPress={onClose} style={styles.cancel}>
-        <Text style={styles.text}>Cancelar</Text>
-      </TouchableOpacity>
-
-    </View>
-  </View>
-</Modal>
-)};
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,

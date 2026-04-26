@@ -10,7 +10,7 @@ export const obterEndereco = async (
       longitude,
     });
 
-    if (resultado.length === 0) return "Endereço não encontrado";
+    if (resultado.length === 0) return "";
 
     const lugar = resultado[0];
 
@@ -20,11 +20,11 @@ export const obterEndereco = async (
       lugar.district,
       lugar.city,
       lugar.region,
-    ].filter(Boolean); // 👈 remove undefined/null
+    ].filter(Boolean); 
 
     return partes.join(", ");
   } catch (error) {
     console.log("Erro no geocoding:", error);
-    return "Erro ao buscar endereço";
+    return ""
   }
 };

@@ -1,11 +1,12 @@
 import React   ,                                                          { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { createUserWithEmailAndPassword }                             from 'firebase/auth';
-import {auth}                                                         from "../src/services/firebaseConfig"
+import { auth }                                                       from "../src/services/firebaseConfig";
 import { useRouter }                                                  from 'expo-router';
 import AsyncStorage                                                   from '@react-native-async-storage/async-storage';
 import { criarPerfilUsuario }                                         from '../src/services/userDataService';
 import { Ionicons }                                                   from "@expo/vector-icons";
+import { useTranslation }                                             from 'react-i18next';
 
 export default function CadastroScreen() {
 
@@ -13,61 +14,70 @@ export default function CadastroScreen() {
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
 
-  const router = useRouter()
+  const { t }  = useTranslation();
+  const router = useRouter();
 
-     const handleVoltar = () => {
-      router.back();
-
+  const handleVoltar = () => {
+    router.back();
   };
-
 
   const handleCadastro = () => {
     if (!nome || !email || !senha) {
-      Alert.alert('Atenção', 'Preencha todos os campos!');
+      Alert.alert(t("atencao"), t("preenchaCampos"));
       return;
     }
-      createUserWithEmailAndPassword(auth,email,senha)
-      .then(async(userCredential)=>{
+
+    createUserWithEmailAndPassword(auth, email, senha)
+      .then(async (userCredential) => {
+
         const user = userCredential.user;
-        
-          //Cria/atualiza o perfil inicial em usuarios/{uid}
+
+          // cria perfil
         await criarPerfilUsuario({
           uid  : user.uid,
           email: user.email,
           nome
-        })
+        });
 
-          //Salvando o usuário no AsyncStorage
-        await AsyncStorage.setItem("@user",JSON.stringify(user))
-        router.replace("/Home")
+          // salva local
+        await AsyncStorage.setItem("@user", JSON.stringify(user));
+
+        Alert.alert(t("sucesso"), t("contaCriada"));
+
+        router.replace("/Home");
       })
       .catch((error) => {
-        const errorCode    = error.code;
-        const errorMessage = error.message;
-        console.log(errorCode+" "+errorMessage)
-    })
+        console.log(error.code, error.message);
+
+        Alert.alert(
+          t("erro"),
+          t("erroCadastro")
+        );
+      });
   };
 
   return (
-    <View             style   = {styles.container}>
-    <TouchableOpacity onPress = {handleVoltar}>
-    <Ionicons         name    = "arrow-back" size = {26} color = "#fff" />
-        </TouchableOpacity>
-      <Text style = {styles.titulo}>Criar Conta</Text>
+    <View style = {styles.container}>
 
-      {/* Campo Nome */}
+      <TouchableOpacity onPress = {handleVoltar}>
+      <Ionicons         name    = "arrow-back" size = {26} color = "#fff" />
+      </TouchableOpacity>
+
+      <Text style = {styles.titulo}>{t("criarConta")}</Text>
+
+      {/* Nome */}
       <TextInput
         style                = {styles.input}
-        placeholder          = "Nome completo"
+        placeholder          = {t("nomeCompleto")}
         placeholderTextColor = "#aaa"
         value                = {nome}
         onChangeText         = {setNome}
       />
 
-      {/* Campo Email */}
+      {/* Email */}
       <TextInput
         style                = {styles.input}
-        placeholder          = "E-mail"
+        placeholder          = {t("email")}
         placeholderTextColor = "#aaa"
         keyboardType         = "email-address"
         autoCapitalize       = "none"
@@ -75,10 +85,10 @@ export default function CadastroScreen() {
         onChangeText         = {setEmail}
       />
 
-      {/* Campo Senha */}
+      {/* Senha */}
       <TextInput
         style                = {styles.input}
-        placeholder          = "Senha"
+        placeholder          = {t("senha")}
         placeholderTextColor = "#aaa"
         secureTextEntry
         value        = {senha}
@@ -87,13 +97,13 @@ export default function CadastroScreen() {
 
       {/* Botão */}
       <TouchableOpacity style = {styles.botao} onPress = {handleCadastro}>
-      <Text             style = {styles.textoBotao}>Cadastrar</Text>
+      <Text             style = {styles.textoBotao}>{t("cadastrar")}</Text>
       </TouchableOpacity>
+
     </View>
   );
 }
 
-  // Estilização
 const styles = StyleSheet.create({
   container: {
     flex           : 1,
@@ -101,6 +111,7 @@ const styles = StyleSheet.create({
     justifyContent : 'center',
     padding        : 20,
   },
+
   titulo: {
     fontSize    : 28,
     fontWeight  : 'bold',
@@ -108,6 +119,7 @@ const styles = StyleSheet.create({
     marginBottom: 30,
     textAlign   : 'center',
   },
+
   input: {
     backgroundColor: '#1E1E1E',
     color          : '#fff',
@@ -118,12 +130,14 @@ const styles = StyleSheet.create({
     borderWidth    : 1,
     borderColor    : '#333',
   },
+
   botao: {
     backgroundColor: '#1F6FEB',
     padding        : 15,
     borderRadius   : 10,
     alignItems     : 'center',
   },
+
   textoBotao: {
     color     : '#fff',
     fontSize  : 18,
