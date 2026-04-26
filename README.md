@@ -45,10 +45,10 @@ npx expo start
 * TypeScript
 * Firebase (Firestore)
 * JavaScript
-• i18next 
-• react-native-maps & expo-location 
-• Firebase Cloud Messaging
-• EAS Build
+* i18next 
+* react-native-maps & expo-location 
+* Firebase Cloud Messaging
+* EAS Build
 
 ---
 
