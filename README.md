@@ -31,7 +31,7 @@ npx expo start
 - Desse modo você pode acessar utilizando o aplicativo do expo-go tanto no seu emulador android quanto no seu dispositivo móvel.
 
 ## Instalação 
-- Baixe o arquivo apk acessando o link a baixo e clicando em "install"
+- Baixe o arquivo apk acessando o link a baixo e clicando nos 3 pontos e em "download build"
   https://expo.dev/accounts/gabrielggc/projects/DodoNotas/builds/69b5f53f-6f05-4058-abbd-523253c7c806
 
 - Execute o aplicativo apk, e o app está pronto para uso
